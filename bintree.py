@@ -19,10 +19,11 @@ def extend_arr_tree(arr, index, val):
 
 
 class Tree(object):
-    def __init__(self):
+    def __init__(self, verbose=False):
         # Array data structure for the tree
         # See: https://en.wikipedia.org/w/index.php?title=Binary_tree&oldid=964115444#Arrays
         self.arr = [0, ]
+        self.verbose = verbose
 
     @property
     def depth(self):
@@ -33,10 +34,12 @@ class Tree(object):
         assert child not in set(self.arr), f"{child} already in tree"
         i = self.arr.index(parent)
         if len(self.arr) - 1 < 2 * i + 1:
-            print(f"Adding left child {child} to parent {parent}")
+            if self.verbose:
+                print(f"Adding left child {child} to parent {parent}")
             extend_arr_tree(self.arr, 2 * i + 1, child)
         elif len(self.arr) - 1 < 2 * i + 2:
-            print(f"Adding right child {child} to parent {parent}")
+            if self.verbose:
+                print(f"Adding right child {child} to parent {parent}")
             extend_arr_tree(self.arr, 2 * i + 2, child)
         else:
             assert False, f"Parent {parent} has already 2 children"
@@ -76,7 +79,6 @@ class Tree(object):
         parents = collections.deque(c)
         while len(parents) > 0:
             p = parents.popleft()
-            # print(f"Get offspring for parent {p}")
             c, inds = self.get_children(p, return_index=True)
             offspring.extend(c)
             offspring_inds.extend(inds)
@@ -134,7 +136,8 @@ class Tree(object):
 
     def swap_branches(self, node1, node2):
         assert self.get_parent(node1) == self.get_parent(node2), f"To swap 2 branches, nodes must have the same parents. {node1} has as parent {self.get_parent(node1)} and {node2} has as parent {self.get_parent(node2)}"
-        print(f"Swapping branches {node1} and {node2}")
+        if self.verbose:
+            print(f"Swapping branches {node1} and {node2}")
         inds1 = self.get_subtree(node1)
         inds2 = self.get_subtree(node2)
         arr = numpy.asarray([None, ] * len(self.arr))
@@ -164,7 +167,7 @@ class Align(object):
 
 
 if __name__ == '__main__':
-    tree = Tree()
+    tree = Tree(verbose=True)
     tree.add_child(0, 'a')
     tree.add_child(0, 'b')
     tree.add_child('a', 'c')
