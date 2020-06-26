@@ -15,6 +15,7 @@ func runcmd () {
 
 cat << EOF
 # Binary tree class in python
+The tree as an array data structure as described here: https://en.wikipedia.org/w/index.php?title=Binary_tree&oldid=964115444#Arrays
 EOF
 
 runcmd "./bintree.py"
