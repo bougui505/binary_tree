@@ -124,6 +124,14 @@ class Tree(object):
             print(lines)
         return lines
 
+    def get_nodes(self, depth):
+        """
+        Get the nodes at the given tree depth
+        """
+        ind1 = 2**(depth) - 1
+        ind2 = 2**(depth + 1) - 1
+        return [e for e in self.arr[ind1:ind2] if e is not None]
+
     def swap_branches(self, node1, node2):
         assert self.get_parent(node1) == self.get_parent(node2), f"To swap 2 branches, nodes must have the same parents. {node1} has as parent {self.get_parent(node1)} and {node2} has as parent {self.get_parent(node2)}"
         print(f"Swapping branches {node1} and {node2}")
@@ -141,6 +149,15 @@ class Tree(object):
         return self.print_tree(doprint=False)
 
 
+class Align(object):
+    """
+    Align 2 trees
+    """
+    def __init__(self, tree1, tree2):
+        self.tree1 = tree1
+        self.tree2 = tree2
+
+
 if __name__ == '__main__':
     tree = Tree()
     tree.add_child(0, 'a')
@@ -154,6 +171,8 @@ if __name__ == '__main__':
     print(f"Tree array: {tree.arr}")
     print(f"Tree depth: {tree.depth}")
     print(f"Tree leaves: {tree.get_leaves(0)}")
+    depth = 2
+    print(f"Get nodes at depth {depth}: {tree.get_nodes(depth)}")
     leaves, offspring, offspring_inds = tree.get_leaves('b',
                                                         return_offspring=True,
                                                         return_offspring_index=True)

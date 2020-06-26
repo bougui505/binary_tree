@@ -17,6 +17,7 @@ Adding right child g to parent e
 Tree array: [0, 'a', 'b', 'c', None, 'd', 'e', None, None, None, None, None, None, 'f', 'g']
 Tree depth: 3
 Tree leaves: ['c', 'd', 'f', 'g']
+Get nodes at depth 2: ['c', 'd', 'e']
 Parent of nodes 'd' and 'e': ('b', 'b')
 Leaves from node 'b': ['d', 'f', 'g']
 Offspring from node 'b': ['d', 'e', 'f', 'g']
