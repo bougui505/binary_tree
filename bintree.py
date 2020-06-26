@@ -20,7 +20,9 @@ def extend_arr_tree(arr, index, val):
 
 class Tree(object):
     def __init__(self):
-        self.arr = [0, ]  # Array data structure for the tree
+        # Array data structure for the tree
+        # See: https://en.wikipedia.org/w/index.php?title=Binary_tree&oldid=964115444#Arrays
+        self.arr = [0, ]
 
     def add_child(self, parent, child):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
