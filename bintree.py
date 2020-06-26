@@ -24,6 +24,10 @@ class Tree(object):
         # See: https://en.wikipedia.org/w/index.php?title=Binary_tree&oldid=964115444#Arrays
         self.arr = [0, ]
 
+    @property
+    def depth(self):
+        return int(numpy.log(1 - (1 - 2) * len(self.arr)) / numpy.log(2)) - 1
+
     def add_child(self, parent, child):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
         assert child not in set(self.arr), f"{child} already in tree"
@@ -93,6 +97,7 @@ if __name__ == '__main__':
     tree.add_child('e', 'f')
     tree.add_child('e', 'g')
     print(f"Tree array: {tree.arr}")
+    print(f"Tree depth: {tree.depth}")
     print(f"Tree leaves: {tree.get_leaves(0)}")
     leaves, offspring, offspring_inds = tree.get_leaves('b',
                                                         return_offspring=True,

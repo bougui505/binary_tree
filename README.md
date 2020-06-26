@@ -10,6 +10,7 @@ Adding right child e to parent b
 Adding left child f to parent e
 Adding right child g to parent e
 Tree array: [0, 'a', 'b', 'c', None, 'd', 'e', None, None, None, None, None, None, 'f', 'g']
+Tree depth: 3
 Tree leaves: ['c', 'd', 'f', 'g']
 Leaves from node 'b': ['d', 'f', 'g']
 Offspring from node 'b': ['d', 'e', 'f', 'g']
