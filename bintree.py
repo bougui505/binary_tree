@@ -37,36 +37,48 @@ class Tree(object):
         else:
             assert False, f"Parent {parent} has already 2 children"
 
-    def get_children(self, parent):
+    def get_children(self, parent, return_index=False):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
         i = self.arr.index(parent)
         ind1 = 2 * i + 1
         ind2 = 2 * i + 2
         children = []
+        inds = []
         for ind in [ind1, ind2]:
             if ind < len(self.arr):
                 if self.arr[ind] is not None:
                     children.append(self.arr[ind])
-        return children
+                    inds.append(ind)
+        if return_index:
+            return children, inds
+        else:
+            return children
 
-    def get_leaves(self, parent, return_offspring=False):
+    def get_leaves(self, parent, return_offspring=False,
+                   return_offspring_index=False):
         p = parent
         leaves = []
         offspring = []
-        c = self.get_children(p)
+        offspring_inds = []
+        c, inds = self.get_children(p, return_index=True)
         offspring.extend(c)
+        offspring_inds.extend(inds)
         parents = collections.deque(c)
         while len(parents) > 0:
             p = parents.popleft()
             # print(f"Get offspring for parent {p}")
-            c = self.get_children(p)
+            c, inds = self.get_children(p, return_index=True)
             offspring.extend(c)
+            offspring_inds.extend(inds)
             if len(c) == 0:
                 leaves.append(p)
             else:
                 parents.extend(c)
         if return_offspring:
-            return leaves, offspring
+            if return_offspring_index:
+                return leaves, offspring, offspring_inds
+            else:
+                return leaves, offspring
         else:
             return leaves
 
@@ -82,6 +94,9 @@ if __name__ == '__main__':
     tree.add_child('e', 'g')
     print(f"Tree array: {tree.arr}")
     print(f"Tree leaves: {tree.get_leaves(0)}")
-    leaves, offsrpring = tree.get_leaves('b', return_offspring=True)
+    leaves, offspring, offspring_inds = tree.get_leaves('b',
+                                                        return_offspring=True,
+                                                        return_offspring_index=True)
     print(f"Leaves from node 'b': {leaves}")
-    print(f"Offspring from node 'b': {offsrpring}")
+    print(f"Offspring from node 'b': {offspring}")
+    print(f"Offspring indices from node 'b': {offspring_inds}")

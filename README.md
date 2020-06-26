@@ -13,4 +13,5 @@ Tree array: [0, 'a', 'b', 'c', None, 'd', 'e', None, None, None, None, None, Non
 Tree leaves: ['c', 'd', 'f', 'g']
 Leaves from node 'b': ['d', 'f', 'g']
 Offspring from node 'b': ['d', 'e', 'f', 'g']
+Offspring indices from node 'b': [5, 6, 13, 14]
 ```
