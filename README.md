@@ -17,7 +17,13 @@ Adding right child g to parent e
 Tree array: [0, 'a', 'b', 'c', None, 'd', 'e', None, None, None, None, None, None, 'f', 'g']
 Tree depth: 3
 Tree leaves: ['c', 'd', 'f', 'g']
+Parent of nodes 'd' and 'e': ('b', 'b')
 Leaves from node 'b': ['d', 'f', 'g']
 Offspring from node 'b': ['d', 'e', 'f', 'g']
 Offspring indices from node 'b': [5, 6, 13, 14]
+Swapping branches a and b
+       0        
+     b    a     
+   d  e  c  -   
+- - f g - - - - 
 ```

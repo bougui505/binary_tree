@@ -92,6 +92,20 @@ class Tree(object):
         else:
             return leaves
 
+    def get_subtree(self, node):
+        """
+        Returns the index of the nodes of the subtree rooted on node
+        """
+        i_list = collections.deque([self.arr.index(node), ])
+        i = i_list.popleft()
+        inds = [i]
+        while (2 * i + 2) < len(self.arr):
+            inds_ = [2 * i + 1, 2 * i + 2]
+            inds.extend(inds_)
+            i_list.extend(inds_)
+            i = i_list.popleft()
+        return inds
+
     def print_tree(self, doprint=True):
         ind2 = 1
         linewidth = 2**self.depth * 2
@@ -112,15 +126,16 @@ class Tree(object):
 
     def swap_branches(self, node1, node2):
         assert self.get_parent(node1) == self.get_parent(node2), f"To swap 2 branches, nodes must have the same parents. {node1} has as parent {self.get_parent(node1)} and {node2} has as parent {self.get_parent(node2)}"
-        ind1 = self.arr.index(node1)
-        ind2 = self.arr.index(node2)
-        _, offspr1, offspr_ind1 = self.get_leaves(node1, return_offspring=True,
-                                                  return_offspring_index=True)
-        _, offspr2, offspr_ind2 = self.get_leaves(node2, return_offspring=True,
-                                                  return_offspring_index=True)
-        exclude_list = set([ind1, ind2]) | set(offspr_ind1) | set(offspr_ind2)
-        arr = [self.arr[i] if i not in exclude_list else None for i in range(len(self.arr))]
-        print(arr, offspr1, offspr2)
+        print(f"Swapping branches {node1} and {node2}")
+        inds1 = self.get_subtree(node1)
+        inds2 = self.get_subtree(node2)
+        arr = numpy.asarray([None, ] * len(self.arr))
+        i = min(min(inds1), min(inds2))
+        arr[:i] = self.arr[:i]
+        arr[inds1] = numpy.asarray(self.arr)[inds2]
+        arr[inds2] = numpy.asarray(self.arr)[inds1]
+        arr = list(arr)
+        self.arr = arr
 
     def __repr__(self):
         return self.print_tree(doprint=False)
@@ -147,3 +162,4 @@ if __name__ == '__main__':
     print(f"Offspring from node 'b': {offspring}")
     print(f"Offspring indices from node 'b': {offspring_inds}")
     tree.swap_branches('a', 'b')
+    print(tree)
