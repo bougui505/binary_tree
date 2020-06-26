@@ -164,6 +164,8 @@ class Align(object):
         """
         Get the overlap at the given  depth
         """
+        nodes1 = self.tree1.get_nodes(depth)
+        nodes2 = self.tree2.get_nodes(depth)
 
 
 if __name__ == '__main__':
@@ -188,6 +190,7 @@ if __name__ == '__main__':
     print(f"Leaves from node 'b': {leaves}")
     print(f"Offspring from node 'b': {offspring}")
     print(f"Offspring indices from node 'b': {offspring_inds}")
-    print("=" * 80)
+    print("================================================================================")
     tree.swap_branches('a', 'b')
     print(tree)
+    print("================================================================================")
