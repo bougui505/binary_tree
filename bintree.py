@@ -49,20 +49,26 @@ class Tree(object):
                     children.append(self.arr[ind])
         return children
 
-    def get_leaves(self, parent):
+    def get_leaves(self, parent, return_offspring=False):
         p = parent
         leaves = []
+        offspring = []
         c = self.get_children(p)
+        offspring.extend(c)
         parents = collections.deque(c)
         while len(parents) > 0:
             p = parents.popleft()
-            # print(f"Get children for parent {p}")
+            # print(f"Get offspring for parent {p}")
             c = self.get_children(p)
+            offspring.extend(c)
             if len(c) == 0:
                 leaves.append(p)
             else:
                 parents.extend(c)
-        return leaves
+        if return_offspring:
+            return leaves, offspring
+        else:
+            return leaves
 
 
 if __name__ == '__main__':
@@ -72,5 +78,10 @@ if __name__ == '__main__':
     tree.add_child('a', 'c')
     tree.add_child('b', 'd')
     tree.add_child('b', 'e')
+    tree.add_child('e', 'f')
+    tree.add_child('e', 'g')
     print(f"Tree array: {tree.arr}")
     print(f"Tree leaves: {tree.get_leaves(0)}")
+    leaves, offsrpring = tree.get_leaves('b', return_offspring=True)
+    print(f"Leaves from node 'b': {leaves}")
+    print(f"Offspring from node 'b': {offsrpring}")
