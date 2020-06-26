@@ -22,6 +22,7 @@ Parent of nodes 'd' and 'e': ('b', 'b')
 Leaves from node 'b': ['d', 'f', 'g']
 Offspring from node 'b': ['d', 'e', 'f', 'g']
 Offspring indices from node 'b': [5, 6, 13, 14]
+================================================================================
 Swapping branches a and b
        0        
      b    a     
