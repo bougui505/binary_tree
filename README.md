@@ -9,6 +9,10 @@ Adding left child d to parent b
 Adding right child e to parent b
 Adding left child f to parent e
 Adding right child g to parent e
+       0        
+     a    b     
+   c  -  d  e   
+- - - - - - f g 
 Tree array: [0, 'a', 'b', 'c', None, 'd', 'e', None, None, None, None, None, None, 'f', 'g']
 Tree depth: 3
 Tree leaves: ['c', 'd', 'f', 'g']

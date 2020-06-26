@@ -86,6 +86,27 @@ class Tree(object):
         else:
             return leaves
 
+    def print_tree(self, doprint=True):
+        ind2 = 1
+        linewidth = 2**self.depth * 2
+        lines = []
+        for i in range(self.depth + 1):
+            ind1, ind2 = ind2, 2 * ind2
+            line = self.arr[ind1 - 1:ind2 - 1]
+            nchars = len(line)
+            spacewidth = int(linewidth / (2 * nchars))
+            spacestr = ' ' * spacewidth
+            line = spacestr.join([str(e) if e is not None else '-' for e in line])
+            line = line.center(linewidth)
+            lines.append(line)
+        lines = '\n'.join(lines)
+        if doprint:
+            print(lines)
+        return lines
+
+    def __repr__(self):
+        return self.print_tree(doprint=False)
+
 
 if __name__ == '__main__':
     tree = Tree()
@@ -96,6 +117,7 @@ if __name__ == '__main__':
     tree.add_child('b', 'e')
     tree.add_child('e', 'f')
     tree.add_child('e', 'g')
+    print(tree)
     print(f"Tree array: {tree.arr}")
     print(f"Tree depth: {tree.depth}")
     print(f"Tree leaves: {tree.get_leaves(0)}")
