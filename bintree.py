@@ -58,6 +58,12 @@ class Tree(object):
         else:
             return children
 
+    def get_parent(self, child):
+        assert child in set(self.arr), f"{child} is not present in the tree"
+        i = self.arr.index(child)
+        ind = int((i - 1) / 2)
+        return self.arr[ind]
+
     def get_leaves(self, parent, return_offspring=False,
                    return_offspring_index=False):
         p = parent
@@ -104,6 +110,18 @@ class Tree(object):
             print(lines)
         return lines
 
+    def swap_branches(self, node1, node2):
+        assert self.get_parent(node1) == self.get_parent(node2), f"To swap 2 branches, nodes must have the same parents. {node1} has as parent {self.get_parent(node1)} and {node2} has as parent {self.get_parent(node2)}"
+        ind1 = self.arr.index(node1)
+        ind2 = self.arr.index(node2)
+        _, offspr1, offspr_ind1 = self.get_leaves(node1, return_offspring=True,
+                                                  return_offspring_index=True)
+        _, offspr2, offspr_ind2 = self.get_leaves(node2, return_offspring=True,
+                                                  return_offspring_index=True)
+        exclude_list = set([ind1, ind2]) | set(offspr_ind1) | set(offspr_ind2)
+        arr = [self.arr[i] if i not in exclude_list else None for i in range(len(self.arr))]
+        print(arr, offspr1, offspr2)
+
     def __repr__(self):
         return self.print_tree(doprint=False)
 
@@ -124,6 +142,8 @@ if __name__ == '__main__':
     leaves, offspring, offspring_inds = tree.get_leaves('b',
                                                         return_offspring=True,
                                                         return_offspring_index=True)
+    print(f"Parent of nodes 'd' and 'e': {tree.get_parent('d'), tree.get_parent('e')}")
     print(f"Leaves from node 'b': {leaves}")
     print(f"Offspring from node 'b': {offspring}")
     print(f"Offspring indices from node 'b': {offspring_inds}")
+    tree.swap_branches('a', 'b')
