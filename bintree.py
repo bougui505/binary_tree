@@ -5,6 +5,7 @@
 # https://research.pasteur.fr/en/member/guillaume-bouvier/
 # 2020-06-26 09:08:41 (UTC+0200)
 
+import copy
 import numpy
 import collections
 
@@ -140,7 +141,7 @@ class Tree(object):
             print(f"Swapping branches {node1} and {node2}")
         inds1 = self.get_subtree(node1)
         inds2 = self.get_subtree(node2)
-        arr = numpy.asarray([None, ] * len(self.arr))
+        arr = numpy.asarray(copy.deepcopy(self.arr))
         i = min(min(inds1), min(inds2))
         arr[:i] = self.arr[:i]
         arr[inds1] = numpy.asarray(self.arr)[inds2]
@@ -166,6 +167,14 @@ class Align(object):
         """
         nodes1 = self.tree1.get_nodes(depth)
         nodes2 = self.tree2.get_nodes(depth)
+        print(nodes1)
+        print(nodes2)
+        for node1 in nodes1:
+            leaves1 = self.tree1.get_leaves(node1)
+            print(leaves1)
+            for node2 in nodes2:
+                leaves2 = self.tree2.get_leaves(node2)
+                print(leaves2)
 
 
 if __name__ == '__main__':
@@ -193,4 +202,15 @@ if __name__ == '__main__':
     print("================================================================================")
     tree.swap_branches('a', 'b')
     print(tree)
+    tree.swap_branches('b', 'a')
+    print(tree)
     print("================================================================================")
+    print("Aligning trees")
+    tree1 = copy.deepcopy(tree)
+    tree.swap_branches('a', 'b')
+    tree.swap_branches('d', 'e')
+    tree2 = copy.deepcopy(tree)
+    print(tree1)
+    print(tree2)
+    align = Align(tree1, tree2)
+    align.overlap(0)
