@@ -28,7 +28,7 @@ class Tree(object):
 
     @property
     def depth(self):
-        return int(numpy.log(1 - (1 - 2) * len(self.arr)) / numpy.log(2)) - 1
+        return numpy.int(numpy.ceil(numpy.log(1 - (1 - 2) * len(self.arr)) / numpy.log(2))) - 1
 
     def add_child(self, parent, child):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
@@ -44,6 +44,14 @@ class Tree(object):
             extend_arr_tree(self.arr, 2 * i + 2, child)
         else:
             assert False, f"Parent {parent} has already 2 children"
+
+    def close(self):
+        """
+        Close the tree building step procedure
+        """
+        arr_len = (1 - 2**(self.depth + 1)) / (1 - 2)
+        toadd = int(arr_len - len(self.arr))
+        self.arr.extend([None, ] * toadd)
 
     def get_children(self, parent, return_index=False):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
@@ -160,21 +168,41 @@ class Align(object):
     def __init__(self, tree1, tree2):
         self.tree1 = tree1
         self.tree2 = tree2
+        self.overlaps = self.get_overlaps()
+        self.nodes1 = [e for e in self.tree1.arr if e is not None]
+        self.nodes2 = [e for e in self.tree2.arr if e is not None]
 
-    def overlap(self, depth):
+    def get_overlaps(self):
         """
-        Get the overlap at the given  depth
+        Get the overlap matrix for each depth level
         """
-        nodes1 = self.tree1.get_nodes(depth)
-        nodes2 = self.tree2.get_nodes(depth)
-        print(nodes1)
-        print(nodes2)
-        for node1 in nodes1:
-            leaves1 = self.tree1.get_leaves(node1)
-            print(leaves1)
-            for node2 in nodes2:
-                leaves2 = self.tree2.get_leaves(node2)
-                print(leaves2)
+        overlaps = {}
+        for depth in range(min(tree1.depth, tree2.depth) + 1):
+            nodes1 = self.tree1.get_nodes(depth)
+            nodes2 = self.tree2.get_nodes(depth)
+            for node1 in nodes1:
+                leaves1 = self.tree1.get_leaves(node1)
+                for node2 in nodes2:
+                    leaves2 = self.tree2.get_leaves(node2)
+                    overlap = len((set(leaves1) | set([node1])) & (set(leaves2) | set([node2])))
+                    if node1 not in overlaps:
+                        overlaps[node1] = {node2: overlap}
+                    else:
+                        overlaps[node1][node2] = overlap
+        return overlaps
+
+    def get_score_mat(self, gap=-1.):
+        M = numpy.zeros((len(self.nodes1), len(self.nodes2)))
+        assert self.nodes1[0] == 0
+        assert self.nodes2[0] == 0
+        M[0, 0] = self.overlaps[0][0]
+        for i, n1 in enumerate(self.nodes1[1:]):
+            for j, n2 in enumerate(self.nodes2[1:]):
+                if n2 in self.overlaps[n1]:
+                    overlap = self.overlaps[n1][n2]
+                else:
+                    overlap = 0
+                # M[i + 1, j + 1] =
 
 
 if __name__ == '__main__':
@@ -186,6 +214,7 @@ if __name__ == '__main__':
     tree.add_child('b', 'e')
     tree.add_child('e', 'f')
     tree.add_child('e', 'g')
+    tree.close()
     print(tree)
     print(f"Tree array: {tree.arr}")
     print(f"Tree depth: {tree.depth}")
@@ -206,11 +235,31 @@ if __name__ == '__main__':
     print(tree)
     print("================================================================================")
     print("Aligning trees")
-    tree1 = copy.deepcopy(tree)
-    tree.swap_branches('a', 'b')
-    tree.swap_branches('d', 'e')
-    tree2 = copy.deepcopy(tree)
+    tree1 = Tree()
+    tree1.add_child(0, 1)
+    tree1.add_child(0, 2)
+    tree1.add_child(1, 'a')
+    tree1.add_child(2, 3)
+    tree1.add_child(2, 4)
+    tree1.add_child(3, 'c')
+    tree1.add_child(3, 'd')
+    tree1.add_child(4, 'e')
+    tree1.add_child(4, 'f')
+    tree1.close()
+    print(tree1.arr)
     print(tree1)
+    tree2 = Tree()
+    tree2.add_child(0, 1)
+    tree2.add_child(0, 2)
+    tree2.add_child(1, 3)
+    tree2.add_child(1, 4)
+    tree2.add_child(2, 'a')
+    tree2.add_child(3, 'f')
+    tree2.add_child(3, 'e')
+    tree2.add_child(4, 'd')
+    tree2.add_child(4, 'c')
+    tree2.close()
+    print(tree2.arr)
     print(tree2)
     align = Align(tree1, tree2)
-    align.overlap(0)
+    print(align.overlaps)
