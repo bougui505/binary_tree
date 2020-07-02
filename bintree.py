@@ -184,23 +184,24 @@ class Align(object):
         self.nodes2 = self.tree2.nodes
         self.overlaps = self.get_overlaps()
 
-    def get_overlaps(self):
+    def get_overlaps(self, gap=1):
         """
         Get the overlap matrix for each depth level
         """
         overlaps = {}
-        for depth in range(min(tree1.depth, tree2.depth) + 1):
-            nodes1 = self.tree1.get_nodes(depth)
-            nodes2 = self.tree2.get_nodes(depth)
-            for node1 in nodes1:
-                leaves1 = self.tree1.get_leaves(node1)
-                for node2 in nodes2:
-                    leaves2 = self.tree2.get_leaves(node2)
-                    overlap = len((set(leaves1) | set([node1])) & (set(leaves2) | set([node2])))
-                    if node1 not in overlaps:
-                        overlaps[node1] = {node2: overlap}
-                    else:
-                        overlaps[node1][node2] = overlap
+        for node1 in self.nodes1:
+            leaves1 = self.tree1.get_leaves(node1)
+            for node2 in self.nodes2:
+                depth1 = tree1.get_node_depth(node1)
+                depth2 = tree1.get_node_depth(node2)
+                leaves2 = self.tree2.get_leaves(node2)
+                overlap = len((set(leaves1) | set([node1])) & (set(leaves2) | set([node2])))
+                # Gap penalty:
+                overlap -= numpy.abs(depth2 - depth1) * gap
+                if node1 not in overlaps:
+                    overlaps[node1] = {node2: overlap}
+                else:
+                    overlaps[node1][node2] = overlap
         return overlaps
 
     def get_score_mat(self, gap=-1.):
