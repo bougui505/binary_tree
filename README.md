@@ -28,5 +28,22 @@ Swapping branches a and b
      b    a     
    d  e  c  -   
 - - f g - - - - 
+Swapping branches b and a
+       0        
+     a    b     
+   c  -  d  e   
+- - - - - - f g 
 ================================================================================
+Aligning trees
+[0, 1, 2, 'a', None, 3, 4, None, None, None, None, 'c', 'd', 'e', 'f']
+       0        
+     1    2     
+   a  -  3  4   
+- - - - c d e f 
+[0, 1, 2, 3, 4, 'a', None, 'f', 'e', 'd', 'c', None, None, None, None]
+       0        
+     1    2     
+   3  4  a  -   
+f e d c - - - - 
+Node alignment of trees: [(0, 0), (1, 2), (2, 1), ('a', 'a'), (3, 4), (4, 3), ('c', 'c'), ('d', 'd'), ('e', 'e'), ('f', 'f')]
 ```

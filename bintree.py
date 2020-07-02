@@ -7,6 +7,7 @@
 
 import copy
 import numpy
+import scipy.optimize
 import collections
 
 
@@ -168,9 +169,9 @@ class Align(object):
     def __init__(self, tree1, tree2):
         self.tree1 = tree1
         self.tree2 = tree2
-        self.overlaps = self.get_overlaps()
         self.nodes1 = [e for e in self.tree1.arr if e is not None]
         self.nodes2 = [e for e in self.tree2.arr if e is not None]
+        self.overlaps = self.get_overlaps()
 
     def get_overlaps(self):
         """
@@ -193,16 +194,18 @@ class Align(object):
 
     def get_score_mat(self, gap=-1.):
         M = numpy.zeros((len(self.nodes1), len(self.nodes2)))
-        assert self.nodes1[0] == 0
-        assert self.nodes2[0] == 0
-        M[0, 0] = self.overlaps[0][0]
-        for i, n1 in enumerate(self.nodes1[1:]):
-            for j, n2 in enumerate(self.nodes2[1:]):
+        for i, n1 in enumerate(self.nodes1):
+            for j, n2 in enumerate(self.nodes2):
                 if n2 in self.overlaps[n1]:
-                    overlap = self.overlaps[n1][n2]
-                else:
-                    overlap = 0
-                # M[i + 1, j + 1] =
+                    M[i, j] = self.overlaps[n1][n2]
+        return M
+
+    def align(self):
+        row_ind, col_ind = scipy.optimize.linear_sum_assignment(-self.get_score_mat())
+        alignment = []
+        for i, j in zip(row_ind, col_ind):
+            alignment.append((self.nodes1[i], self.nodes2[j]))
+        return alignment
 
 
 if __name__ == '__main__':
@@ -262,4 +265,5 @@ if __name__ == '__main__':
     print(tree2.arr)
     print(tree2)
     align = Align(tree1, tree2)
-    print(align.overlaps)
+    alignment = align.align()
+    print(f"Node alignment of trees: {alignment}")
