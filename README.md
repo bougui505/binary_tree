@@ -35,12 +35,12 @@ Swapping branches b and a
 - - - - - - f g 
 ================================================================================
 Aligning trees
-[0, 1, 2, 'a', None, 3, 4, None, None, None, None, 'c', 'd', 'e', 'f']
+Tree 1:
        0        
      1    2     
    a  -  3  4   
 - - - - c d e f 
-[0, 1, 2, 3, 4, 'a', None, 'f', 'e', 'd', 'c', None, None, None, None]
+Tree 2:
        0        
      1    2     
    3  4  a  -   
