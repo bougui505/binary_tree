@@ -31,6 +31,10 @@ class Tree(object):
     def depth(self):
         return numpy.int(numpy.ceil(numpy.log(1 - (1 - 2) * len(self.arr)) / numpy.log(2))) - 1
 
+    @property
+    def nodes(self):
+        return [e for e in self.arr if e is not None]
+
     def add_child(self, parent, child):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
         assert child not in set(self.arr), f"{child} already in tree"
@@ -144,6 +148,13 @@ class Tree(object):
         ind2 = 2**(depth + 1) - 1
         return [e for e in self.arr[ind1:ind2] if e is not None]
 
+    def get_node_depth(self, node):
+        """
+        Return the depth of the node
+        """
+        ind = self.arr.index(node)
+        return numpy.int(numpy.ceil(numpy.log(1 - (1 - 2) * (ind + 1)) / numpy.log(2))) - 1
+
     def swap_branches(self, node1, node2):
         assert self.get_parent(node1) == self.get_parent(node2), f"To swap 2 branches, nodes must have the same parents. {node1} has as parent {self.get_parent(node1)} and {node2} has as parent {self.get_parent(node2)}"
         if self.verbose:
@@ -169,8 +180,8 @@ class Align(object):
     def __init__(self, tree1, tree2):
         self.tree1 = tree1
         self.tree2 = tree2
-        self.nodes1 = [e for e in self.tree1.arr if e is not None]
-        self.nodes2 = [e for e in self.tree2.arr if e is not None]
+        self.nodes1 = self.tree1.nodes
+        self.nodes2 = self.tree2.nodes
         self.overlaps = self.get_overlaps()
 
     def get_overlaps(self):
@@ -222,6 +233,7 @@ if __name__ == '__main__':
     print(f"Tree array: {tree.arr}")
     print(f"Tree depth: {tree.depth}")
     print(f"Tree leaves: {tree.get_leaves(0)}")
+    print(f"Depth of each node: {['node '+str(n)+': '+str(tree.get_node_depth(n)) for n in tree.nodes]}")
     depth = 2
     print(f"Get nodes at depth {depth}: {tree.get_nodes(depth)}")
     leaves, offspring, offspring_inds = tree.get_leaves('b',
