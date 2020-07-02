@@ -183,6 +183,7 @@ class Align(object):
         self.nodes1 = self.tree1.nodes
         self.nodes2 = self.tree2.nodes
         self.overlaps = self.get_overlaps()
+        self.score = None
 
     def get_overlaps(self, gap=1):
         """
@@ -212,12 +213,17 @@ class Align(object):
                     M[i, j] = self.overlaps[n1][n2]
         return M
 
-    def align(self):
+    def align(self, return_index=False):
         row_ind, col_ind = scipy.optimize.linear_sum_assignment(-self.get_score_mat())
+        self.score = self.get_score_mat()[row_ind, col_ind].sum()
         alignment = []
         for i, j in zip(row_ind, col_ind):
             alignment.append((self.nodes1[i], self.nodes2[j]))
-        return alignment
+        # Align tree2.arr on tree1.arr
+        if return_index:
+            return alignment, list(zip(row_ind, col_ind))
+        else:
+            return alignment
 
 
 if __name__ == '__main__':
@@ -278,3 +284,4 @@ if __name__ == '__main__':
     align = Align(tree1, tree2)
     alignment = align.align()
     print(f"Node alignment of trees: {alignment}")
+    print(f"Alignment score: {align.score}")
