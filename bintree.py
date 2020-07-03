@@ -183,7 +183,6 @@ class Align(object):
         self.nodes1 = self.tree1.nodes
         self.nodes2 = self.tree2.nodes
         self.overlaps = self.get_overlaps()
-        self.score = None
 
     def get_overlaps(self, gap=1):
         """
@@ -205,34 +204,43 @@ class Align(object):
                     overlaps[node1][node2] = overlap
         return overlaps
 
-    def get_score_mat(self, gap=-1.):
-        M = numpy.zeros((len(self.nodes1), len(self.nodes2)))
-        for i, n1 in enumerate(self.nodes1):
-            for j, n2 in enumerate(self.nodes2):
-                if n2 in self.overlaps[n1]:
-                    M[i, j] = self.overlaps[n1][n2]
-        return M
+    def _align(self, depth):
+        nodes1 = self.tree1.get_nodes(depth)
+        nodes2 = self.tree2.get_nodes(depth)
+        score = 0
+        for node1 in nodes1:
+            for node2 in nodes2:
+                s = self.overlaps[node1][node2]
+                if s >= score:
+                    node2_0 = self.tree2.arr[self.tree1.arr.index(node1)]
+                    swapped = False
+                    try:
+                        self.tree2.swap_branches(node2_0, node2)
+                        swapped = True
+                    except AssertionError:
+                        pass
+                    if swapped:
+                        score = s
 
     def align(self):
-        row_ind, col_ind = scipy.optimize.linear_sum_assignment(-self.get_score_mat())
-        self.score = self.get_score_mat()[row_ind, col_ind].sum()
-        alignment = []
-        for i, j in zip(row_ind, col_ind):
-            alignment.append((self.nodes1[i], self.nodes2[j]))
-        self._align_tree(alignment)
-        return alignment
+        depth1 = self.tree1.depth
+        depth2 = self.tree2.depth
+        assert depth1 == depth2
+        depth = depth1
+        for d in range(depth + 1):
+            self._align(d)
 
-    def _align_tree(self, alignment):
-        """
-        Helper function to align self.tree2 on self.tree1 from the alignment
-        obtained from align function
-        """
-        # Align tree2.arr on tree1.arr
-        arr_aln = [None, ] * len(self.tree2.arr)
-        for node1, node2 in alignment:
-            ind1 = self.tree1.arr.index(node1)
-            arr_aln[ind1] = node2
-        self.tree2.arr = arr_aln
+    @property
+    def score(self):
+        arr1 = numpy.asarray(self.tree1.arr)
+        arr2 = numpy.asarray(self.tree2.arr)
+        leaves1 = numpy.asarray(self.tree1.get_leaves(0))
+        leaves2 = numpy.asarray(self.tree2.get_leaves(0))
+        s1 = numpy.isin(arr1, leaves1)
+        s2 = numpy.isin(arr2, leaves2)
+        isleaf = numpy.logical_and(s1, s2)
+        overlap = (arr1 == arr2)
+        return numpy.logical_and(isleaf, overlap).sum()
 
 
 if __name__ == '__main__':
@@ -291,8 +299,7 @@ if __name__ == '__main__':
     tree2.close()
     print(f"Tree 2:\n{tree2}")
     align = Align(tree1, tree2)
-    alignment = align.align()
-    print(f"Node alignment of trees: {alignment}")
+    align.align()
     print(f"Alignment score: {align.score}")
     print(f"Tree 2 aligned on Tree 1:\n{align.tree2}")
     tree2 = Tree()
@@ -308,7 +315,6 @@ if __name__ == '__main__':
     tree2.close()
     print(f"Tree 2:\n{tree2}")
     align = Align(tree1, tree2)
-    alignment = align.align()
-    print(f"Node alignment of trees: {alignment}")
+    align.align()
     print(f"Alignment score: {align.score}")
     print(f"Tree 2 aligned on Tree 1:\n{align.tree2}")

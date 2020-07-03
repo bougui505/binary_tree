@@ -46,11 +46,21 @@ Tree 2:
      1    2     
    3  4  a  -   
 f e d c - - - - 
-Node alignment of trees: [(0, 0), (1, 2), (2, 1), ('a', 'a'), (3, 4), (4, 3), ('c', 'c'), ('d', 'd'), ('e', 'e'), ('f', 'f')]
-Alignment score: 20.0
+Alignment score: 5
 Tree 2 aligned on Tree 1:
        0        
      2    1     
    a  -  4  3   
 - - - - c d e f 
+Tree 2:
+       0        
+     1    2     
+   3  4  a  -   
+c e d f - - - - 
+Alignment score: 3
+Tree 2 aligned on Tree 1:
+       0        
+     2    1     
+   a  -  3  4   
+- - - - c e d f 
 ```
