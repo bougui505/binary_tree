@@ -302,6 +302,8 @@ if __name__ == '__main__':
     align.align()
     print(f"Alignment score: {align.score}")
     print(f"Tree 2 aligned on Tree 1:\n{align.tree2}")
+    print("--------------------------------------------")
+    print("Aligning new Tree 2 on Tree 1")
     tree2 = Tree()
     tree2.add_child(0, 1)
     tree2.add_child(0, 2)

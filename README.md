@@ -52,6 +52,8 @@ Tree 2 aligned on Tree 1:
      2    1     
    a  -  4  3   
 - - - - c d e f 
+--------------------------------------------
+Aligning new Tree 2 on Tree 1
 Tree 2:
        0        
      1    2     
