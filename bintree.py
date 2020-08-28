@@ -226,8 +226,8 @@ class Align(object):
         for node1 in self.nodes1:
             leaves1 = self.tree1.get_leaves(node1)
             for node2 in self.nodes2:
-                depth1 = tree1.get_node_depth(node1)
-                depth2 = tree1.get_node_depth(node2)
+                depth1 = self.tree1.get_node_depth(node1)
+                depth2 = self.tree1.get_node_depth(node2)
                 leaves2 = self.tree2.get_leaves(node2)
                 overlap = len((set(leaves1) | set([node1])) & (set(leaves2) | set([node2])))
                 # Gap penalty:
