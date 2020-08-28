@@ -35,6 +35,32 @@ class Tree(object):
     def nodes(self):
         return [e for e in self.arr if e is not None]
 
+    def linkage_to_tree(self, linkage_matrix):
+        """
+        Convert a linkage matrix to an array data structure
+        """
+        n = linkage_matrix.shape[0] + 1
+        parents = [2 * (n - 1), ]
+        self.arr = list(numpy.copy(parents))
+        leaves = range(n)
+        i = 0
+        new_parents = []
+        while True:
+            while i < len(parents):
+                print(i, parents)
+                parent = parents[i]
+                children = numpy.int_(linkage_matrix[int((parent) % n)])
+                self.add_child(parent, children[0])
+                self.add_child(parent, children[1])
+                new_parents.extend(list(set(children) - set(leaves)))
+                i += 1
+            parents = list(set(new_parents) - set(leaves))
+            new_parents = []
+            i = 0
+            if len(parents) == 0:
+                break
+        self.close()
+
     def add_child(self, parent, child):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
         assert child not in set(self.arr), f"{child} already in tree"
@@ -48,7 +74,12 @@ class Tree(object):
                 print(f"Adding right child {child} to parent {parent}")
             extend_arr_tree(self.arr, 2 * i + 2, child)
         else:
-            assert False, f"Parent {parent} has already 2 children"
+            if self.arr[2 * i + 1] is None:
+                self.arr[2 * i + 1] = child
+            elif self.arr[2 * i + 2] is None:
+                self.arr[2 * i + 2] = child
+            else:
+                assert False, f"Parent {parent} has already 2 children"
 
     def close(self):
         """
@@ -320,3 +351,19 @@ if __name__ == '__main__':
     align.align()
     print(f"Alignment score: {align.score}")
     print(f"Tree 2 aligned on Tree 1:\n{align.tree2}")
+    print("--------------------------------------------")
+    print("Building tree from a linkage matrix")
+    linkage_mat = numpy.asarray([[11., 12.]
+                                 , [0., 4.]
+                                 , [8., 9.]
+                                 , [6., 10.]
+                                 , [1., 5.]
+                                 , [2., 14.]
+                                 , [16., 17.]
+                                 , [7., 15.]
+                                 , [3., 18.]
+                                 , [19., 20.]
+                                 , [13., 22.]
+                                 , [21., 23.]])
+    tree = Tree(verbose=True)
+    tree.linkage_to_tree(linkage_mat)
