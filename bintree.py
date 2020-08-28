@@ -39,6 +39,7 @@ class Tree(object):
         """
         Convert a linkage matrix to an array data structure
         """
+        linkage_matrix = linkage_matrix[:, :2]
         n = linkage_matrix.shape[0] + 1
         parents = [2 * (n - 1), ]
         self.arr = list(numpy.copy(parents))
@@ -46,8 +47,10 @@ class Tree(object):
         i = 0
         new_parents = []
         while True:
+            if self.verbose:
+                print("~~~~~~~~~~~~~~~~~~~~~")
+                print(f"Adding child for parents: {parents}")
             while i < len(parents):
-                print(i, parents)
                 parent = parents[i]
                 children = numpy.int_(linkage_matrix[int((parent) % n)])
                 self.add_child(parent, children[0])
