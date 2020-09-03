@@ -57,7 +57,7 @@ class Tree(object):
                 self.add_child(parent, children[1])
                 new_parents.extend(list(set(children) - set(leaves)))
                 i += 1
-            parents = list(set(new_parents) - set(leaves))
+            parents = list(set(new_parents))
             new_parents = []
             i = 0
             if len(parents) == 0:
@@ -134,6 +134,8 @@ class Tree(object):
                 leaves.append(p)
             else:
                 parents.extend(c)
+        if len(leaves)==0:
+            leaves.append(p)
         if return_offspring:
             if return_offspring_index:
                 return leaves, offspring, offspring_inds
@@ -211,7 +213,8 @@ class Align(object):
     """
     Align 2 trees
     """
-    def __init__(self, tree1, tree2):
+    def __init__(self, tree1, tree2, mapping = None):
+        self.mapping = mapping
         self.tree1 = tree1
         self.tree2 = tree2
         self.nodes1 = self.tree1.nodes
@@ -229,7 +232,17 @@ class Align(object):
                 depth1 = self.tree1.get_node_depth(node1)
                 depth2 = self.tree2.get_node_depth(node2)
                 leaves2 = self.tree2.get_leaves(node2)
-                overlap = len((set(leaves1) | set([node1])) & (set(leaves2) | set([node2])))
+                if self.mapping is None:
+                    overlap = len((set(leaves1)) & (set(leaves2)))
+                else:
+                    mapleaves2 = []
+                    mapnode2 = []
+                    for l2 in leaves2:
+                        if l2 in self.mapping:
+                            mapleaves2.extend(list(numpy.unique(self.mapping[l2])))
+                    if node2 in self.mapping:
+                        mapnode2.extend(list(numpy.unique(self.mapping[node2])))
+                    overlap = len((set(leaves1) | set([node1])) & (set(mapleaves2) | set(mapnode2)))
                 # Gap penalty:
                 overlap -= numpy.abs(depth2 - depth1) * gap
                 if node1 not in overlaps:
@@ -241,8 +254,8 @@ class Align(object):
     def _align(self, depth):
         nodes1 = self.tree1.get_nodes(depth)
         nodes2 = self.tree2.get_nodes(depth)
-        score = 0
         for node1 in nodes1:
+            score = 0
             for node2 in nodes2:
                 s = self.overlaps[node1][node2]
                 if s >= score:
@@ -268,12 +281,21 @@ class Align(object):
     def score(self):
         arr1 = numpy.asarray(self.tree1.arr)
         arr2 = numpy.asarray(self.tree2.arr)
-        leaves1 = numpy.asarray(self.tree1.get_leaves(0))
-        leaves2 = numpy.asarray(self.tree2.get_leaves(0))
+        leaves1 = numpy.asarray(self.tree1.get_leaves(self.tree1.arr[0]))
+        leaves2 = numpy.asarray(self.tree2.get_leaves(self.tree2.arr[0]))
         s1 = numpy.isin(arr1, leaves1)
         s2 = numpy.isin(arr2, leaves2)
         isleaf = numpy.logical_and(s1, s2)
         overlap = (arr1 == arr2)
+        if self.mapping:
+            maparr2 = [self.mapping[i] if i in self.mapping else None for i in arr2]
+            overlap = []
+            for u,v in zip(maparr2,arr1):
+                if u is not None and v is not None:
+                    overlap.append(len(set(u) & set([v])))
+                else: 
+                    overlap.append(0)
+        
         return numpy.logical_and(isleaf, overlap).sum()
 
 
