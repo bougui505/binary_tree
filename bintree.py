@@ -9,7 +9,7 @@ import copy
 import numpy
 import scipy.optimize
 import collections
-
+import warnings
 
 def extend_arr_tree(arr, index, val):
     """
@@ -64,6 +64,23 @@ class Tree(object):
                 break
         self.close()
 
+    def tree_to_linkage(self,original_linkage_matrix=[]):
+        n = len(self.get_leaves(self.arr[0]))
+        leaves = range(n)
+        linkage_matrix = []
+        if len(original_linkage_matrix) == 0:
+            distance = 1
+        else:
+            i = n
+            for original_node in original_linkage_matrix:
+                children = self.get_children(n)
+                assert set(children) == set(original_node[:2]), f"parent {n} with children {children} doesn't match the original linkage matrix {original_node}"
+                node = children
+                node.extend(original_node[2:])
+                linkage_matrix.append(node)
+                n+=1
+        return linkage_matrix
+
     def add_child(self, parent, child):
         assert parent in set(self.arr), f"{parent} is not present in the tree"
         assert child not in set(self.arr), f"{child} already in tree"
@@ -114,6 +131,22 @@ class Tree(object):
         i = self.arr.index(child)
         ind = int((i - 1) / 2)
         return self.arr[ind]
+
+    def get_order_leaves(self):
+        parent = self.arr[0]
+        c, inds = self.get_children(parent, return_index=True)
+        parents = collections.deque([c[1],c[0]])
+        order_leaves = []
+        while len(parents) > 0:
+            p = parents.pop()
+            i = self.arr.index(p)
+            ind = 2 * i +1
+            c, inds = self.get_children(p, return_index=True)
+            if len(c) == 0:
+                order_leaves.append(p)
+            else:
+                parents.extend([c[1],c[0]])    
+        return order_leaves     
 
     def get_leaves(self, parent, return_offspring=False,
                    return_offspring_index=False):
@@ -212,9 +245,11 @@ class Tree(object):
 class Align(object):
     """
     Align 2 trees
+    mapping: dictionary to map tree2 labels to tree1 labels
     """
-    def __init__(self, tree1, tree2, mapping = None):
+    def __init__(self, tree1, tree2, mapping = None, verbose = False):
         self.mapping = mapping
+        self.verbose = verbose
         self.tree1 = tree1
         self.tree2 = tree2
         self.nodes1 = self.tree1.nodes
@@ -236,13 +271,10 @@ class Align(object):
                     overlap = len((set(leaves1)) & (set(leaves2)))
                 else:
                     mapleaves2 = []
-                    mapnode2 = []
                     for l2 in leaves2:
                         if l2 in self.mapping:
-                            mapleaves2.extend(list(numpy.unique(self.mapping[l2])))
-                    if node2 in self.mapping:
-                        mapnode2.extend(list(numpy.unique(self.mapping[node2])))
-                    overlap = len((set(leaves1) | set([node1])) & (set(mapleaves2) | set(mapnode2)))
+                            mapleaves2.extend(list(self.mapping[l2]))
+                    overlap = sum(numpy.isin(mapleaves2, leaves1))
                 # Gap penalty:
                 overlap -= numpy.abs(depth2 - depth1) * gap
                 if node1 not in overlaps:
@@ -254,28 +286,92 @@ class Align(object):
     def _align(self, depth):
         nodes1 = self.tree1.get_nodes(depth)
         nodes2 = self.tree2.get_nodes(depth)
+        if self.verbose:
+            print(f'reference nodes in depth {depth}: {nodes1}')
+            print(f'aligning nodes in depth {depth}: {nodes2}')
         for node1 in nodes1:
             score = 0
             for node2 in nodes2:
                 s = self.overlaps[node1][node2]
+                if self.verbose:
+                    print(f'reference {node1} aligning {node2} overlap {s}')
                 if s >= score:
                     node2_0 = self.tree2.arr[self.tree1.arr.index(node1)]
                     swapped = False
                     try:
                         self.tree2.swap_branches(node2_0, node2)
+                        if self.verbose:
+                            print(f"Swapping branches {node2_0} and {node2} from aligning")
                         swapped = True
                     except AssertionError:
                         pass
                     if swapped:
                         score = s
-
+    
     def align(self):
+        """
+        Align tree2 to tree1 by using an overlaping matrix'
+        """
         depth1 = self.tree1.depth
         depth2 = self.tree2.depth
-        assert depth1 == depth2
-        depth = depth1
+        if depth1 != depth2:
+            warnings.warn("depth1 != depth2", UserWarning)
+            print(f'depth1 {depth1} depth2 {depth2}')
+            depth = min(depth1,depth2)
+        else:
+            depth = depth1
         for d in range(depth + 1):
             self._align(d)
+    
+    def align2(self):
+        """
+        Align tree2 to tree1 by using a step by step minimization process
+        """
+        score = self.score2(self.tree1,self.tree2)
+        if self.verbose: print(f'0: {score}')
+        leaves2 = numpy.asarray(self.tree2.get_leaves(self.tree2.arr[0]))
+        nodes2 = [i for i in self.tree2.arr if i]
+        moves = list(set(nodes2)-set(leaves2))
+        scores = [None] * len(moves)
+        count = 0
+        while True:
+            auxtree2 = copy.deepcopy(self.tree2)
+            for i,m in enumerate(moves):
+                c = auxtree2.get_children(m)
+                auxtree2.swap_branches(c[0], c[1])
+                scores[i]=self.score2(self.tree1,auxtree2)
+                auxtree2.swap_branches(c[0], c[1])
+            imin = numpy.argmin(scores)
+            if scores[imin] < score:
+                count += 1
+                score = scores[imin]
+                c = self.tree2.get_children(moves[imin])
+                self.tree2.swap_branches(c[0],c[1])
+                if self.verbose:
+                    print(f'Swapping branches {c[0]} and {c[1]}')
+                    print(f'{count}: {score}')
+            else:
+                break
+
+    def score2(self,tree1,tree2):
+        leaves1 = numpy.asarray(tree1.get_order_leaves())
+        leaves2 = numpy.asarray(tree2.get_order_leaves()) 
+        mappedlist=[item for sublist in self.mapping.values() for item in sublist]
+        missing=set(leaves1)-set(mappedlist)
+        leaves1 = [x for x in leaves1 if x not in missing]
+        mappedlist=self.mapping.keys()
+        missing=set(leaves2)-set(mappedlist)
+        leaves2 = [x for x in leaves2 if x not in missing]
+        npairs = 0.0
+        dist = 0.0
+        for n2,i in enumerate(leaves2):
+            if i in self.mapping:
+                for k in self.mapping[i]:
+                    if k in leaves1:
+                        n1 = leaves1.index(k)
+                        dist+=(n2-n1)**2/len(self.mapping[i])
+                        npairs+=1.0/len(self.mapping[i])
+        return float(dist/npairs)
 
     @property
     def score(self):
@@ -283,10 +379,16 @@ class Align(object):
         arr2 = numpy.asarray(self.tree2.arr)
         leaves1 = numpy.asarray(self.tree1.get_leaves(self.tree1.arr[0]))
         leaves2 = numpy.asarray(self.tree2.get_leaves(self.tree2.arr[0]))
+        print(leaves1)
+        print(leaves2)
         s1 = numpy.isin(arr1, leaves1)
         s2 = numpy.isin(arr2, leaves2)
+        print(s1)
+        print(s2)
         isleaf = numpy.logical_and(s1, s2)
         overlap = (arr1 == arr2)
+        print(isleaf)
+        print(overlap)
         if self.mapping:
             maparr2 = [self.mapping[i] if i in self.mapping else None for i in arr2]
             overlap = []
