@@ -247,14 +247,15 @@ class Align(object):
     Align 2 trees
     mapping: dictionary to map tree2 labels to tree1 labels
     """
-    def __init__(self, tree1, tree2, mapping = None, verbose = False):
+    def __init__(self, tree1, tree2, mode='m', mapping = None, verbose = False):
         self.mapping = mapping
         self.verbose = verbose
         self.tree1 = tree1
         self.tree2 = tree2
         self.nodes1 = self.tree1.nodes
         self.nodes2 = self.tree2.nodes
-        self.overlaps = self.get_overlaps()
+        if mode == 'o':
+            self.overlaps = self.get_overlaps()
 
     def get_overlaps(self, gap=1):
         """
