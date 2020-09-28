@@ -148,6 +148,36 @@ class Tree(object):
                 parents.extend([c[1],c[0]])    
         return order_leaves     
 
+    def get_order_leaves2(self):
+        evaluated_nodes = 0
+        current_node = self.arr[0]
+        nodes = [node for node in self.arr if node is not None]
+        order_leaves = []
+        node_status = {key:0 for key in nodes}
+        while evaluated_nodes<len(nodes):
+            i = self.arr.index(current_node)
+            if node_status[current_node] == 0:
+                ind = 2*i+1
+                node_status[current_node] = 1
+            elif node_status[current_node] == 1:
+                ind = 2*i+2
+                node_status[current_node] = 2
+            elif node_status[current_node] == 2:
+                current_node = self.get_parent(current_node)
+                evaluated_nodes+=1
+                continue
+            if ind < len(self.arr):
+                if self.arr[ind] == None:
+                    order_leaves.append(current_node)
+                    current_node = self.get_parent(current_node)
+                else:
+                    current_node = self.arr[ind]
+            else:
+                order_leaves.append(current_node)
+                current_node = self.get_parent(current_node)
+        return order_leaves 
+            
+
     def get_leaves(self, parent, return_offspring=False,
                    return_offspring_index=False):
         p = parent
@@ -328,8 +358,7 @@ class Align(object):
         """
         Align tree2 to tree1 by using a step by step minimization process
         """
-        score = self.score2(self.tree1,self.tree2)
-        if self.verbose: print(f'0: {score}')
+        score2 = self.score2(self.tree1,self.tree2)
         leaves2 = numpy.asarray(self.tree2.get_leaves(self.tree2.arr[0]))
         nodes2 = [i for i in self.tree2.arr if i]
         moves = list(set(nodes2)-set(leaves2))
@@ -343,14 +372,14 @@ class Align(object):
                 scores[i]=self.score2(self.tree1,auxtree2)
                 auxtree2.swap_branches(c[0], c[1])
             imin = numpy.argmin(scores)
-            if scores[imin] < score:
+            if scores[imin] < score2:
                 count += 1
-                score = scores[imin]
+                score2 = scores[imin]
                 c = self.tree2.get_children(moves[imin])
                 self.tree2.swap_branches(c[0],c[1])
                 if self.verbose:
                     print(f'Swapping branches {c[0]} and {c[1]}')
-                    print(f'{count}: {score}')
+                    print(f'{count}: {score2}')
             else:
                 break
 
